@@ -1,0 +1,5 @@
+#!/bin/bash
+cd ~/Documents/IMT/A2/SIT213/Projet/SIT213/
+rm -rf bin/*
+rm -rf docs/*
+rm ../Fayolle-Huynh.tar.gz

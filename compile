@@ -1,0 +1,3 @@
+#!/bin/bash
+cd /Users/lucasfayolle/Documents/IMT/A2/SIT213/Projet/SIT213
+javac src/*/*.java -d bin

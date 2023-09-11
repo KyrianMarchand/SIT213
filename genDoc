@@ -1,0 +1,3 @@
+#!/bin/bash
+cd ~/Documents/IMT/A2/SIT213/Projet/SIT213/
+javadoc src/*/* -d docs
