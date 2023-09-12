@@ -10,6 +10,8 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 	
 	public RecepteurAnalogique(float minimumAmp, float maximumAmp, int nbEchantillon) {
 		super();
+		this.informationEmise = new Information<Boolean>();
+		this.informationRecue = new Information<Float>();
 		this.seuil = (minimumAmp + maximumAmp)/2;
 		this.nbEchantillon = nbEchantillon;
 	}
@@ -17,16 +19,27 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 	@Override
 	public void recevoir(Information<Float> information) throws InformationNonConformeException {
 		// TODO Auto-generated method stub
-		int compteur = (int) nbEchantillon/2;
-		Information<Boolean> infoLogique = new Information<Boolean>();
-		for (int i =0; i<(information.nbElements()/nbEchantillon-1); i++) {
-			if(information.iemeElement(i) >= seuil) {
-				infoLogique.add(true);
+		for (Float i : information) {
+			informationRecue.add(i);
+		}
+		decodage(this.informationRecue);
+		emettre();
+		
+		
+		
+	}
+	
+	public void decodage(Information<Float> information) throws InformationNonConformeException {
+		for (int compteur = (int) nbEchantillon/2; compteur<(information.nbElements()-nbEchantillon); compteur+=nbEchantillon) {
+			this.informationRecue.add(information.iemeElement(compteur));
+			if(information.iemeElement(compteur) >= seuil) {
+				this.informationEmise.add(true);
 			}
 			else {
-				infoLogique.add(false);
+				this.informationEmise.add(false);
 			}
 		}
+		emettre();
 	}
 
 	@Override

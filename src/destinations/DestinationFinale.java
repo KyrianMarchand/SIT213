@@ -20,5 +20,4 @@ public class DestinationFinale extends Destination <Boolean>{
 			informationRecue.add(i);
 		}
 	}
-
 }

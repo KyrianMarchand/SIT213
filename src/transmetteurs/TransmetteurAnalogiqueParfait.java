@@ -4,7 +4,11 @@ import destinations.DestinationInterface;
 import information.Information;
 import information.InformationNonConformeException;
 
-public class TransmetteurAnalogiqueParfait extends Transmetteur<Float,Float>{
+public class TransmetteurAnalogiqueParfait extends Transmetteur<Float,Float> {
+	public TransmetteurAnalogiqueParfait() {
+		super();
+		this.informationRecue = new Information<Float>();
+	}
 
 	@Override
 	public void recevoir(Information<Float> information) throws InformationNonConformeException {

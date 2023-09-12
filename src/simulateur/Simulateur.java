@@ -6,9 +6,13 @@ import information.InformationNonConformeException;
 import sources.Source;
 import sources.SourceAleatoire;
 import sources.SourceFixe;
+import transmetteurs.EmetteurAnalogique;
+import transmetteurs.RecepteurAnalogique;
 import transmetteurs.Transmetteur;
+import transmetteurs.TransmetteurAnalogiqueParfait;
 import transmetteurs.TransmetteurParfait;
 import visualisations.Sonde;
+import visualisations.SondeAnalogique;
 import visualisations.SondeLogique;
 
 
@@ -76,15 +80,25 @@ public class Simulateur {
     	else {
     		this.source = new SourceFixe(messageString);
     	}
-    	this.transmetteurLogique = new TransmetteurParfait();
-    	this.destination = new DestinationFinale();
     	
-    	source.connecter(transmetteurLogique);
-    	transmetteurLogique.connecter(destination);
+    	EmetteurAnalogique ea = new EmetteurAnalogique(0, 5,10, "NRZT");
+    	source.connecter(ea);
+    	TransmetteurAnalogiqueParfait tap = new TransmetteurAnalogiqueParfait();
+    	ea.connecter(tap);
+    	RecepteurAnalogique ra = new RecepteurAnalogique(0,5,10);
+    	tap.connecter(ra);
+    	this.destination = new DestinationFinale();
+    	ra.connecter(destination);
+    	
+    	//source.connecter(transmetteurLogique);
+    	//transmetteurLogique.connecter(destination);
     	
     	if (affichage) {
     		source.connecter(new SondeLogique("Source", 200));
-    		transmetteurLogique.connecter(new SondeLogique("Transmetteur", 200));
+    		//transmetteurLogique.connecter(new SondeLogique("Transmetteur", 200));
+    		ea.connecter(new SondeAnalogique("EmetteurAnalogique"));
+    		tap.connecter(new SondeAnalogique("TransmetteurAnalogique"));
+    		//ra.connecter(new SondeAnalogique("RecepteurAnalogique"));
     	}
     }
    
@@ -181,7 +195,7 @@ public class Simulateur {
     	if (infoSource.nbElements() == 0) {
     		return 0.0f;
     	}
-    	for (int i =0; i< infoDestination.nbElements(); i++) {
+    	for (int i =0; i< infoSource.nbElements(); i++) {
     		if (infoDestination.iemeElement(i) != infoSource.iemeElement(i)) {
     			nbErreur += 1;
     		}
