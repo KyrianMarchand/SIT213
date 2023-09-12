@@ -19,5 +19,6 @@ public class DestinationFinale extends Destination <Boolean>{
 		for (Boolean i : information) {
 			informationRecue.add(i);
 		}
+		System.out.println(informationRecue);
 	}
 }

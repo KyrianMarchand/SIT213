@@ -30,7 +30,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 	}
 	
 	public void decodage(Information<Float> information) throws InformationNonConformeException {
-		for (int compteur = (int) nbEchantillon/2; compteur<(information.nbElements()-nbEchantillon); compteur+=nbEchantillon) {
+		for (int compteur = (int) nbEchantillon/2; compteur<(information.nbElements()); compteur+=nbEchantillon) {
 			this.informationRecue.add(information.iemeElement(compteur));
 			if(information.iemeElement(compteur) >= seuil) {
 				this.informationEmise.add(true);

@@ -52,6 +52,18 @@ public class Simulateur {
     
     /** le  composant Destination de la chaine de transmission */
     private Destination <Boolean>  destination = null;
+    
+    private String form = "RZ";
+    
+    private int nbEch = 30;
+    
+    private float maxAmp = 1f;
+    
+    private float minAmp = 0f;
+    
+    private boolean analogique = false;
+    
+    
    	
    
     /** Le constructeur de Simulateur construit une chaîne de
@@ -80,25 +92,31 @@ public class Simulateur {
     	else {
     		this.source = new SourceFixe(messageString);
     	}
-    	
-    	EmetteurAnalogique ea = new EmetteurAnalogique(0, 5,10, "NRZT");
-    	source.connecter(ea);
-    	TransmetteurAnalogiqueParfait tap = new TransmetteurAnalogiqueParfait();
-    	ea.connecter(tap);
-    	RecepteurAnalogique ra = new RecepteurAnalogique(0,5,10);
-    	tap.connecter(ra);
     	this.destination = new DestinationFinale();
-    	ra.connecter(destination);
-    	
-    	//source.connecter(transmetteurLogique);
-    	//transmetteurLogique.connecter(destination);
-    	
-    	if (affichage) {
-    		source.connecter(new SondeLogique("Source", 200));
-    		//transmetteurLogique.connecter(new SondeLogique("Transmetteur", 200));
-    		ea.connecter(new SondeAnalogique("EmetteurAnalogique"));
-    		tap.connecter(new SondeAnalogique("TransmetteurAnalogique"));
-    		//ra.connecter(new SondeAnalogique("RecepteurAnalogique"));
+    	if (analogique) {
+    		EmetteurAnalogique ea = new EmetteurAnalogique(this.minAmp, this.maxAmp, this.nbEch, this.form);
+        	source.connecter(ea);
+        	TransmetteurAnalogiqueParfait tap = new TransmetteurAnalogiqueParfait();
+        	ea.connecter(tap);
+        	RecepteurAnalogique ra = new RecepteurAnalogique(this.minAmp, this.maxAmp, this.nbEch);
+        	tap.connecter(ra);
+        	
+        	ra.connecter(destination);
+        	if (affichage) {
+        		source.connecter(new SondeLogique("Source", 200));
+        		ea.connecter(new SondeAnalogique("EmetteurAnalogique"));
+        		tap.connecter(new SondeAnalogique("TransmetteurAnalogique"));
+        		ra.connecter(new SondeLogique("Recepteur",200));
+        	}
+    	}
+    	else {
+    		this.transmetteurLogique = new TransmetteurParfait();
+    		source.connecter(transmetteurLogique);
+			transmetteurLogique.connecter(destination);
+    		if (affichage) {
+    			source.connecter(new SondeLogique("Source", 200));
+    			this.transmetteurLogique.connecter(new SondeLogique("Transmetteur",200));
+    		}
     	}
     }
    
@@ -118,9 +136,10 @@ public class Simulateur {
      * </dl>
      *
      * @throws ArgumentsException si un des arguments est incorrect.
+     * @throws InformationNonConformeException 
      *
      */   
-    public  void analyseArguments(String[] args)  throws  ArgumentsException {
+    public  void analyseArguments(String[] args)  throws  ArgumentsException, InformationNonConformeException {
 
     	for (int i=0;i<args.length;i++){ // traiter les arguments 1 par 1
 
@@ -157,6 +176,37 @@ public class Simulateur {
     			else 
     				throw new ArgumentsException("Valeur du parametre -mess invalide : " + args[i]);
     		}
+    		
+    		else if (args[i].matches("-form")) {
+    			i++;
+    			if (String.valueOf(args[i]).equals("RZ") || String.valueOf(args[i]).equals("NRZ") || String.valueOf(args[i]).equals("NRZT")) {
+    				form = String.valueOf(args[i]);
+    				analogique = true;
+    			}
+    			else throw new ArgumentsException("Valeur du parametre -mess invalide : " + args[i]);
+    			
+    		}
+    		
+    		else if (args[i].matches("-nbEch")) {
+    			i++;
+    			if ( Integer.valueOf(args[i]) > 0 ){
+    				nbEch=Integer.valueOf(args[i]);
+    				analogique = true;
+    			}
+    			else throw new ArgumentsException("Valeur du parametre -mess invalide : " + args[i]);
+    		}
+    		
+    		else if (args[i].matches("-ampl")) {
+    			i++;
+				minAmp = Float.valueOf(args[i]);
+				i++;
+				maxAmp = Float.valueOf(args[i]);
+				analogique = true;
+				if (maxAmp < minAmp) {
+					throw new InformationNonConformeException("MAX inferieur à MIN");
+				}
+    		}
+    		
     		
     		//TODO : ajouter ci-après le traitement des nouvelles options
 
