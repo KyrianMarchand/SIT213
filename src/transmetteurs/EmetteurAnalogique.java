@@ -4,12 +4,29 @@ import destinations.DestinationInterface;
 import information.Information;
 import information.InformationNonConformeException;
 
+/**
+ * Cette classe représente un émetteur analogique qui prend des informations
+ * booléennes en entrée et les transforme en signaux analogiques en fonction
+ * du type de signal spécifié.
+ * 
+ */
 public class EmetteurAnalogique extends Transmetteur<Boolean, Float>{
 	private float minimumAmp = 0f;
 	private float maximumAmp = 0f;
 	private int nbEchantillon = 0;
 	private String typeSignal = "";
 	
+	/**
+     * Constructeur de la classe EmetteurAnalogique.
+     * 
+     * @param minimumAmp     L'amplitude minimale du signal.
+     * @param maximumAmp     L'amplitude maximale du signal.
+     * @param nbEchantillon  Le nombre d'échantillons par bit.
+     * @param typeSignal     Le type de signal ("RZ", "NRZ" ou "NRZT").
+     * @throws InformationNonConformeException Si le type de signal est inconnu
+     *                                          ou si le minimumAmp est différent
+     *                                          de 0 pour le signal "RZ".
+     */
 	public EmetteurAnalogique(float minimumAmp, float maximumAmp, int nbEchantillon, String typeSignal) throws InformationNonConformeException {
 		super();
 		
@@ -19,18 +36,61 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float>{
 		if (typeSignal.equals("RZ") && minimumAmp != 0)
 			throw new InformationNonConformeException("Minimum different de 0 pour RZ");
 		
-		this.informationEmise= new Information<Float>();
-		this.informationRecue = new Information<Boolean>();
+		//this.informationEmise= new Information<Float>();
+		//this.informationRecue = new Information<Boolean>();
 		
 		this.minimumAmp = minimumAmp;
 		this.maximumAmp = maximumAmp;
 		this.nbEchantillon = nbEchantillon;
 		this.typeSignal = typeSignal;
+		this.informationRecue = new Information<Boolean>();
+		this.informationEmise = new Information<Float>();
 		
 	}
 	
-	public void translationNRZ(Information<Boolean> info) {
+	public void setInformationRecue(Information<Boolean> info) {
+		this.informationRecue = info;
+	}
+	public float getMinimumAmp() {
+        return minimumAmp;
+    }
+
+    public void setMinimumAmp(float minimumAmp) {
+        this.minimumAmp = minimumAmp;
+    }
+
+    public float getMaximumAmp() {
+        return maximumAmp;
+    }
+
+    public void setMaximumAmp(float maximumAmp) {
+        this.maximumAmp = maximumAmp;
+    }
+
+    public int getNbEchantillon() {
+        return nbEchantillon;
+    }
+
+    public void setNbEchantillon(int nbEchantillon) {
+        this.nbEchantillon = nbEchantillon;
+    }
+
+    public String getTypeSignal() {
+        return typeSignal;
+    }
+
+    public void setTypeSignal(String typeSignal) {
+        this.typeSignal = typeSignal;
+    }
+	
+    /**
+     * Méthode de transformation du signal en NRZ.
+     * 
+     * @throws InformationNonConformeException Si l'information reçue est incorrecte.
+     */
+	public void translationNRZ() throws InformationNonConformeException {
 		for(Boolean tempBool : informationRecue) {
+			if (tempBool == null) throw new InformationNonConformeException();
 			for(int i=0;i<nbEchantillon; i++) {
 				if(tempBool) {
 					informationEmise.add(maximumAmp);
@@ -42,7 +102,12 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float>{
 		}
 	}
 	
-	public void translationNRZT(Information<Boolean> info) {
+    /**
+     * Méthode de transformation du signal en NRZT.
+     * 
+     * @throws InformationNonConformeException Si l'information reçue est incorrecte.
+     */
+	public void translationNRZT() throws InformationNonConformeException {
 		// Calcul de la période tierce
 		int tierPeriode = (int) Math.ceil(nbEchantillon / 3);
 		int reste = nbEchantillon % 3;
@@ -54,7 +119,9 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float>{
 
 		for (int indiceInfo = 0; indiceInfo < informationRecue.nbElements(); indiceInfo++) {
 		    Boolean bitCourant = tempArray.iemeElement(indiceInfo);
-
+		    
+		    if (bitCourant == null) throw new InformationNonConformeException();
+		    
 		    // Parcours de chaque échantillon
 		    for (int indiceEchantillon = 0; indiceEchantillon < nbEchantillon; indiceEchantillon++) {
 		        if (indiceEchantillon < tierPeriode) {
@@ -97,15 +164,21 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float>{
 		}
 
 		// Ajout de la dernière valeur
-		informationEmise.add((maximumAmp + minimumAmp) / 2);
+		informationEmise.add(informationEmise.iemeElement(0));
 
 	}
 	
-	public void translationRZ(Information<Boolean> info) {
+    /**
+     * Méthode de transformation du signal en RZ.
+     * 
+     * @throws InformationNonConformeException Si l'information reçue est incorrecte.
+     */
+	public void translationRZ() throws InformationNonConformeException {
 		float tierPeriode = nbEchantillon/3;
 		for(Boolean tempBool : informationRecue) {
+			if (tempBool == null) throw new InformationNonConformeException();
 			for(int i=0;i<nbEchantillon; i++) {
-				if (i<tierPeriode || i>2*tierPeriode) {
+				if (i<tierPeriode || i>=2*tierPeriode) {
 					informationEmise.add(minimumAmp);
 				} else {
 					if(tempBool) {
@@ -118,7 +191,14 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float>{
 			}
 		}
 	}
-
+	
+    /**
+     * Méthode pour recevoir des informations booléennes en entrée.
+     * 
+     * @param information Les informations booléennes à recevoir.
+     * @throws InformationNonConformeException Si les informations reçues sont
+     *                                          incorrectes.
+     */
 	@Override
 	public void recevoir(Information<Boolean> information) throws InformationNonConformeException {
 		// TODO Auto-generated method stub
@@ -130,21 +210,27 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float>{
 		
 		
 	}
-
+	
+	/**
+     * Méthode pour émettre le signal transformé aux destinations connectées.
+     * 
+     * @throws InformationNonConformeException Si les informations émises sont
+     *                                          incorrectes.
+     */
 	@Override
 	public void emettre() throws InformationNonConformeException {
 		// TODO Auto-generated method stub
 		switch (typeSignal){
 		case "NRZ" :
-			translationNRZ(this.informationRecue);
+			translationNRZ();
 			break;
 		
 		case "RZ" :
-			translationRZ(this.informationRecue);
+			translationRZ();
 			break;
 			
 		case "NRZT" :
-			translationNRZT(this.informationRecue);
+			translationNRZT();
 			break;
 		}
 		//System.out.println(this.informationRecue);
