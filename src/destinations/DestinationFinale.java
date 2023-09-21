@@ -17,8 +17,9 @@ public class DestinationFinale extends Destination <Boolean>{
 		// TODO Auto-generated method stub
 
 		for (Boolean i : information) {
-			informationRecue.add(i);
+			//System.out.println(this.informationRecue.nbElements());
+			this.informationRecue.add(i);
 		}
-		System.out.println(informationRecue);
+		//System.out.println(informationRecue);
 	}
 }

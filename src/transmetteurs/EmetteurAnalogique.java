@@ -237,5 +237,6 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float>{
 		for (DestinationInterface <Float> destinationConnectee : destinationsConnectees) {
             destinationConnectee.recevoir(this.informationEmise);
 		}
+		
 	}
 }

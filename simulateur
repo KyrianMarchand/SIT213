@@ -1,3 +1,3 @@
 #!/bin/bash
-cd /Users/lucasfayolle/Documents/IMT/A2/SIT213/Projet/SIT213/bin
+cd /Users/lucasfayolle/Documents/IMT/A2/SIT213/Projet/SIT213
 java simulateur/Simulateur $@

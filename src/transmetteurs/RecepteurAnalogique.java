@@ -43,6 +43,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 		}
 		decodage(this.informationRecue);
 		emettre();
+		
 	}
 	
 	/**
@@ -53,17 +54,17 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      * @throws InformationNonConformeException Si les signaux reçus sont incorrects.
      */
 	public void decodage(Information<Float> information) throws InformationNonConformeException {
-		for (int compteur = (int) nbEchantillon/2; compteur<(information.nbElements()); compteur+=nbEchantillon) {
-			this.informationRecue.add(information.iemeElement(compteur));
-			if(information.iemeElement(compteur) >= seuil) {
-				this.informationEmise.add(true);
-			}
-			else {
-				this.informationEmise.add(false);
-			}
-		}
-		emettre();
+	    for (int compteur = (int) nbEchantillon/2; compteur<(information.nbElements()); compteur+=nbEchantillon) {
+	        if(information.iemeElement(compteur) >= seuil) {
+	            this.informationEmise.add(true);
+	        }
+	        else {
+	            this.informationEmise.add(false);
+	        }
+	    }
+	    
 	}
+
 	
 	/**
      * Méthode pour émettre les signaux booléens aux destinations connectées.
@@ -72,6 +73,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      */
 	@Override
 	public void emettre() throws InformationNonConformeException {
+		
 		// TODO Auto-generated method stub
 		for (DestinationInterface <Boolean> destinationConnectee : destinationsConnectees) {
             destinationConnectee.recevoir(informationEmise);

@@ -9,11 +9,13 @@ import sources.SourceFixe;
 import transmetteurs.EmetteurAnalogique;
 import transmetteurs.RecepteurAnalogique;
 import transmetteurs.Transmetteur;
+import transmetteurs.TransmetteurAnalogiqueBruite;
 import transmetteurs.TransmetteurAnalogiqueParfait;
 import transmetteurs.TransmetteurParfait;
 import visualisations.Sonde;
 import visualisations.SondeAnalogique;
 import visualisations.SondeLogique;
+import visualisations.VueCourbe;
 
 
 /** La classe Simulateur permet de construire et simuler une chaîne de
@@ -63,7 +65,7 @@ public class Simulateur {
     
     private boolean analogique = false;
     
-    
+    private float snrpb = 10000000000000000000000000000000000000f;
    	
    
     /** Le constructeur de Simulateur construit une chaîne de
@@ -96,18 +98,34 @@ public class Simulateur {
     	if (analogique) {
     		EmetteurAnalogique ea = new EmetteurAnalogique(this.minAmp, this.maxAmp, this.nbEch, this.form);
         	source.connecter(ea);
-        	TransmetteurAnalogiqueParfait tap = new TransmetteurAnalogiqueParfait();
+        	Transmetteur tap;
+        	if (snrpb == 10000000000000000000000000000000000000f) {
+        		tap = new TransmetteurAnalogiqueParfait();
+        	}
+        	else {
+        		
+        		tap = new TransmetteurAnalogiqueBruite(snrpb, nbEch);
+        	}
+        	
         	ea.connecter(tap);
         	RecepteurAnalogique ra = new RecepteurAnalogique(this.minAmp, this.maxAmp, this.nbEch);
         	tap.connecter(ra);
         	
         	ra.connecter(destination);
+        	
         	if (affichage) {
         		source.connecter(new SondeLogique("Source", 200));
         		ea.connecter(new SondeAnalogique("EmetteurAnalogique"));
         		tap.connecter(new SondeAnalogique("TransmetteurAnalogique"));
-        		ra.connecter(new SondeLogique("Recepteur",200));
+        		ra.connecter(new SondeLogique("Recepteur analogique",200));
         	}
+        	
+        	//if (true) {
+        	//	double[] tab = new double[25];
+        	//	for (int i =0; i<25;i++) {
+        			
+        	//	}
+        	//}
     	}
     	else {
     		this.transmetteurLogique = new TransmetteurParfait();
@@ -207,11 +225,19 @@ public class Simulateur {
 				}
     		}
     		
+    		else if (args[i].matches("-snrpb")) {
+    			i++;
+    			snrpb=Float.valueOf(args[i]);
+    			analogique = true;
+    			this.snrpb = snrpb;
+    		}
+    		
     		
     		//TODO : ajouter ci-après le traitement des nouvelles options
 
     		else throw new ArgumentsException("Option invalide :"+ args[i]);
     	}
+    	
       
     }
      
@@ -239,13 +265,18 @@ public class Simulateur {
      * @return  La valeur du Taux dErreur Binaire.
      */   	   
     public float  calculTauxErreurBinaire() {
+    	
     	int nbErreur = 0;
     	Information<Boolean> infoDestination = destination.getInformationRecue();
     	Information<Boolean> infoSource = source.getInformationEmise();
+    	System.out.println("Src" + infoSource.nbElements());
+    	System.out.println("Dst" + infoDestination.nbElements());
     	if (infoSource.nbElements() == 0) {
     		return 0.0f;
     	}
     	for (int i =0; i< infoSource.nbElements(); i++) {
+    		//System.out.println("Destination" + infoDestination);
+    		//System.out.println("Source" + infoSource);
     		if (infoDestination.iemeElement(i) != infoSource.iemeElement(i)) {
     			nbErreur += 1;
     		}
