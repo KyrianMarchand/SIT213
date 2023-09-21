@@ -51,7 +51,6 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      * du seuil.
      * 
      * @param information Les signaux analogiques à décoder.
-     * @throws InformationNonConformeException Si les signaux reçus sont incorrects.
      */
 	
 	public void decodage(Information<Float> information) {

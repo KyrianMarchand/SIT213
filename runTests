@@ -1,5 +1,4 @@
 #!/bin/bash
-cd ~/Documents/IMT/A2/SIT213/Projet/SIT213/bin
 java simulateur/Simulateur -mess 0101010101 -s
 java simulateur/Simulateur -mess 2 -s
 java simulateur/Simulateur -s
