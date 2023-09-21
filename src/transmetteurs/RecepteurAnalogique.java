@@ -53,16 +53,22 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      * @param information Les signaux analogiques à décoder.
      * @throws InformationNonConformeException Si les signaux reçus sont incorrects.
      */
-	public void decodage(Information<Float> information) throws InformationNonConformeException {
-	    for (int compteur = (int) nbEchantillon/2; compteur<(information.nbElements()); compteur+=nbEchantillon) {
-	        if(information.iemeElement(compteur) >= seuil) {
+	
+	public void decodage(Information<Float> information) {
+		int tierPeriode = (int) Math.ceil(nbEchantillon / 3);
+		for (int compteur = tierPeriode ; compteur<information.nbElements(); compteur+=nbEchantillon){
+			float moyenne=0f;
+			for (int elmt=0 ; elmt < tierPeriode; elmt++) {
+				moyenne += information.iemeElement(compteur + elmt);
+			}
+			moyenne = moyenne/tierPeriode;
+			if(moyenne >= seuil) {
 	            this.informationEmise.add(true);
 	        }
 	        else {
 	            this.informationEmise.add(false);
 	        }
-	    }
-	    
+		}
 	}
 
 	

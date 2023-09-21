@@ -269,8 +269,8 @@ public class Simulateur {
     	int nbErreur = 0;
     	Information<Boolean> infoDestination = destination.getInformationRecue();
     	Information<Boolean> infoSource = source.getInformationEmise();
-    	System.out.println("Src" + infoSource.nbElements());
-    	System.out.println("Dst" + infoDestination.nbElements());
+    	//System.out.println("Src" + infoSource.nbElements());
+    	//System.out.println("Dst" + infoDestination.nbElements());
     	if (infoSource.nbElements() == 0) {
     		return 0.0f;
     	}
