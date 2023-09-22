@@ -5,6 +5,7 @@ import java.util.Random;
 import destinations.DestinationInterface;
 import information.Information;
 import information.InformationNonConformeException;
+import visualisations.GenerationCSV;
 
 /**
  * Cette classe représente un transmetteur analogique bruité qui reçoit des signaux analogiques
@@ -16,6 +17,7 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
     int nbEch;   // Nombre d'échantillons par bit
     Information<Float> informationEmise = new Information<Float>();
     Information<Float> informationRecue = new Information<Float>();
+    Information<Float> bruit = new Information<Float>();
 
     /**
      * Constructeur de la classe TransmetteurAnalogiqueBruite.
@@ -44,6 +46,7 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
         emettre();
     }
 
+
     /**
      * Méthode pour émettre les signaux analogiques bruités aux destinations connectées.
      *
@@ -70,7 +73,9 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
             Random a2 = new Random();
             bruit = (float) (sigma * Math.sqrt(-2 * Math.log(1 - a1.nextDouble())) * Math.cos(2 * Math.PI * a2.nextDouble()));
             this.informationEmise.add(elmt + bruit);
+            this.bruit.add(bruit);
         }
+        GenerationCSV.generation(this.bruit);
 
         // Émission des signaux bruités vers les destinations connectées
         for (DestinationInterface<Float> destinationConnectee : destinationsConnectees) {
