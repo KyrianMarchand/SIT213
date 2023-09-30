@@ -129,8 +129,6 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
     	for (int i = 0; i<(this.informationRecue.nbElements() + maxDephasage()); i++) {
     		info.add(trajet1.iemeElement(i)+ trajet2.iemeElement(i) + trajet3.iemeElement(i) + trajet4.iemeElement(i) + trajet5.iemeElement(i) + trajetDirect.iemeElement(i));
     	}
-    	System.out.println(info.nbElements());
-    	System.out.println( this.dephasage[0]);
     	return info;
     	
     }

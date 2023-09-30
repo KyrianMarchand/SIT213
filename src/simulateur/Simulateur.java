@@ -115,7 +115,7 @@ public class Simulateur {
         	}
         	
         	ea.connecter(tap);
-        	RecepteurAnalogique ra = new RecepteurAnalogique(this.minAmp, this.maxAmp, this.nbEch);
+        	RecepteurAnalogique ra = new RecepteurAnalogique(this.minAmp, this.maxAmp, this.nbEch, this.form);
         	tap.connecter(ra);
         	
         	ra.connecter(destination);

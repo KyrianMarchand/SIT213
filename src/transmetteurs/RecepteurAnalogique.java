@@ -13,6 +13,7 @@ import information.InformationNonConformeException;
 public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 	float seuil;
 	int nbEchantillon;
+	String form;
 	
     /**
      * Constructeur de la classe RecepteurAnalogique.
@@ -21,12 +22,13 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      * @param maximumAmp   L'amplitude maximale du signal.
      * @param nbEchantillon Le nombre d'échantillons par bit.
      */
-	public RecepteurAnalogique(float minimumAmp, float maximumAmp, int nbEchantillon) {
+	public RecepteurAnalogique(float minimumAmp, float maximumAmp, int nbEchantillon, String form) {
 		super();
 		this.informationEmise = new Information<Boolean>();
 		this.informationRecue = new Information<Float>();
 		this.seuil = (minimumAmp + maximumAmp)/2;
 		this.nbEchantillon = nbEchantillon;
+		this.form = form;
 	}
 
     /**
@@ -54,22 +56,42 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      */
 	
 	public void decodage(Information<Float> information) {
-		
-		int tierPeriode = (int) Math.ceil(nbEchantillon / 3);
-		//System.out.println(this.informationRecue.nbElements()+ "reception");
-		for (int compteur = tierPeriode ; compteur<=information.nbElements()-nbEchantillon; compteur+=nbEchantillon){
-			float moyenne=0f;
-			for (int elmt=0 ; elmt < tierPeriode; elmt++) {
-				moyenne += information.iemeElement(compteur + elmt);
+		if (this.form.equals("NRZ")) {
+			
+			for (int compteur = 0 ; compteur<information.nbElements() - nbEchantillon; compteur+=nbEchantillon){
+				float moyenne=0f;
+				for (int elmt=0 ; elmt < nbEchantillon; elmt++) {
+					moyenne += information.iemeElement(compteur + elmt);
+				}
+				moyenne = moyenne/nbEchantillon;
+				if(moyenne >= seuil) {
+		            this.informationEmise.add(true);
+		        }
+		        else {
+		            this.informationEmise.add(false);
+		        }
 			}
-			moyenne = moyenne/tierPeriode;
-			if(moyenne >= seuil) {
-	            this.informationEmise.add(true);
-	        }
-	        else {
-	            this.informationEmise.add(false);
-	        }
+			
 		}
+		else {
+			int tierPeriode = (int) Math.ceil(nbEchantillon / 3);
+			//System.out.println(this.informationRecue.nbElements()+ "reception");
+			for (int compteur = tierPeriode ; compteur<information.nbElements(); compteur+=nbEchantillon){
+				float moyenne=0f;
+				for (int elmt=0 ; elmt < tierPeriode; elmt++) {
+					moyenne += information.iemeElement(compteur + elmt);
+				}
+				moyenne = moyenne/tierPeriode;
+				if(moyenne >= seuil) {
+		            this.informationEmise.add(true);
+		        }
+		        else {
+		            this.informationEmise.add(false);
+		        }
+			}
+		}
+		
+		
 	}
 
 	
