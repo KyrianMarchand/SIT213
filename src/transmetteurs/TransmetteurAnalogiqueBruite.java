@@ -1,5 +1,6 @@
 package transmetteurs;
 
+import java.util.Collection;
 import java.util.Random;
 
 import destinations.DestinationInterface;
@@ -13,11 +14,14 @@ import visualisations.GenerationCSV;
  * Le niveau de bruit est déterminé par le rapport signal-sur-bruit par bit (SNRpb) spécifié.
  */
 public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
-    float snrpb; // Rapport signal-sur-bruit par bit (SNRpb)
-    int nbEch;   // Nombre d'échantillons par bit
-    Information<Float> informationEmise = new Information<Float>();
-    Information<Float> informationRecue = new Information<Float>();
-    Information<Float> bruit = new Information<Float>();
+    private float snrpb; // Rapport signal-sur-bruit par bit (SNRpb)
+    private int nbEch;   // Nombre d'échantillons par bit
+    private float[] attenuation;
+    private int [] dephasage;
+    private Integer seed;
+    private Information<Float> informationEmise = new Information<Float>();
+    private Information<Float> informationRecue = new Information<Float>();
+    private Information<Float> bruit = new Information<Float>();
 
     /**
      * Constructeur de la classe TransmetteurAnalogiqueBruite.
@@ -25,10 +29,13 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
      * @param snrpb Le rapport signal-sur-bruit par bit (SNRpb).
      * @param nbEch Le nombre d'échantillons par bit.
      */
-    public TransmetteurAnalogiqueBruite(float snrpb, int nbEch) {
+    public TransmetteurAnalogiqueBruite(float snrpb, int nbEch, float[] attenuation, int [] dephasage, Integer seed) {
         super();
         this.snrpb = snrpb;
         this.nbEch = nbEch;
+        this.attenuation = attenuation;
+        this.dephasage = dephasage;
+        this.seed = seed;
     }
 
     /**
@@ -54,23 +61,36 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
      */
     @Override
     public void emettre() throws InformationNonConformeException {
+    	Information<Float> info = miseEnFormeSignalPropre();
+    	
+    	
         float puissanceSignal = 0f;
         float snrpbLin = (float) Math.pow(10, snrpb / 10);
 
         // Calcul de la puissance du signal
-        for (float elmt : this.informationRecue) {
+        for (float elmt : info) {
             puissanceSignal += Math.pow(elmt, 2);
         }
-        puissanceSignal = puissanceSignal / this.informationRecue.nbElements();
+        puissanceSignal = puissanceSignal / info.nbElements();
 
         // Calcul de l'écart-type du bruit
         float sigma = (float) Math.sqrt((puissanceSignal * nbEch) / (2 * snrpbLin));
-
+        
+        Random a1;
+        Random a2;
+        if(this.seed != null) {
+        	 a1 = new Random(this.seed);
+             a2 = new Random(this.seed);
+        }
+        else {
+        	 a1 = new Random();
+             a2 = new Random();
+        }
+        
         // Ajout du bruit gaussien blanc aux signaux
-        for (Float elmt : this.informationRecue) {
+        for (Float elmt : info) {
+        	
             float bruit;
-            Random a1 = new Random();
-            Random a2 = new Random();
             bruit = (float) (sigma * Math.sqrt(-2 * Math.log(1 - a1.nextDouble())) * Math.cos(2 * Math.PI * a2.nextDouble()));
             this.informationEmise.add(elmt + bruit);
             this.bruit.add(bruit);
@@ -81,5 +101,59 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
         for (DestinationInterface<Float> destinationConnectee : destinationsConnectees) {
             destinationConnectee.recevoir(informationEmise);
         }
+    }
+    
+    public Information<Float> creationTrajet(int dephasage, float attenuation) {
+    	Information<Float> trajetNouveau = new Information<Float>();
+    	for (int i =0; i<dephasage; i++) {
+    		trajetNouveau.add(0f);
+    	}
+    	for (Float elmt : this.informationRecue) {
+    		trajetNouveau.add(elmt*attenuation);
+    	}
+    	for (int i = trajetNouveau.nbElements(); i < maxTrajetLength(); i++) {
+    		trajetNouveau.add(0f);
+    	}
+    	
+    	return trajetNouveau;
+    }
+    
+    public Information<Float> miseEnFormeSignalPropre(){
+    	Information<Float> info = new Information<Float>();
+    	Information<Float> trajetDirect = creationTrajet(0,1);
+    	Information<Float> trajet1 = creationTrajet(dephasage[0], attenuation[0]);
+    	Information<Float> trajet2 = creationTrajet(dephasage[1], attenuation[1]);
+    	Information<Float> trajet3 = creationTrajet(dephasage[2], attenuation[2]);
+    	Information<Float> trajet4 = creationTrajet(dephasage[3], attenuation[3]);
+    	Information<Float> trajet5 = creationTrajet(dephasage[4], attenuation[4]);
+    	for (int i = 0; i<(this.informationRecue.nbElements() + maxDephasage()); i++) {
+    		info.add(trajet1.iemeElement(i)+ trajet2.iemeElement(i) + trajet3.iemeElement(i) + trajet4.iemeElement(i) + trajet5.iemeElement(i) + trajetDirect.iemeElement(i));
+    	}
+    	System.out.println(info.nbElements());
+    	System.out.println( this.dephasage[0]);
+    	return info;
+    	
+    }
+    
+    public int maxDephasage() {
+    	int max = 0;
+    	for (int elmt : this.dephasage) {
+    		if (elmt>max) {
+    			max=elmt;
+    		}
+    	}
+    	return max + this.informationEmise.nbElements();
+    }
+    
+    public int maxTrajetLength() {
+        int maxLength = this.informationRecue.nbElements();
+
+        for (int i = 0; i < dephasage.length; i++) {
+            if (dephasage[i] + informationRecue.nbElements() > maxLength) {
+                maxLength = dephasage[i] + informationRecue.nbElements();
+            }
+        }
+
+        return maxLength;
     }
 }

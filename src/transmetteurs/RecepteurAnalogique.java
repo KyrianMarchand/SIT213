@@ -54,8 +54,10 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      */
 	
 	public void decodage(Information<Float> information) {
+		
 		int tierPeriode = (int) Math.ceil(nbEchantillon / 3);
-		for (int compteur = tierPeriode ; compteur<information.nbElements(); compteur+=nbEchantillon){
+		//System.out.println(this.informationRecue.nbElements()+ "reception");
+		for (int compteur = tierPeriode ; compteur<=information.nbElements()-nbEchantillon; compteur+=nbEchantillon){
 			float moyenne=0f;
 			for (int elmt=0 ; elmt < tierPeriode; elmt++) {
 				moyenne += information.iemeElement(compteur + elmt);

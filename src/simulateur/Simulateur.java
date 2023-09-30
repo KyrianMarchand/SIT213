@@ -66,6 +66,10 @@ public class Simulateur {
     private boolean analogique = false;
     
     private float snrpb = 10000000000000000000000000000000000000f;
+    
+    private float[] attenuation = {0f,0f,0f,0f,0f};
+    
+    private int[] dephasage = {0,0,0,0,0};
    	
    
     /** Le constructeur de Simulateur construit une chaîne de
@@ -87,6 +91,7 @@ public class Simulateur {
     	analyseArguments(args);
     	if (messageAleatoire && aleatoireAvecGerme) {
     		this.source = new SourceAleatoire(Integer.parseInt(messageString), seed);
+    		//System.out.println(this.source);
     	}
     	else if (messageAleatoire && !aleatoireAvecGerme) {
     		this.source = new SourceAleatoire(Integer.parseInt(messageString));
@@ -99,12 +104,14 @@ public class Simulateur {
     		EmetteurAnalogique ea = new EmetteurAnalogique(this.minAmp, this.maxAmp, this.nbEch, this.form);
         	source.connecter(ea);
         	Transmetteur tap;
-        	if (snrpb == 10000000000000000000000000000000000000f) {
+        	if (snrpb == 10000000000000000000000000000000000000f && this.attenuation[0] == 0 && this.dephasage[0] == 0 && this.attenuation[1] == 0 && this.dephasage[1] == 0
+        			&& this.attenuation[2] == 0 && this.dephasage[2] == 0 && this.attenuation[3] == 0 && this.dephasage[3] == 0 
+        			&& this.attenuation[4] == 0 && this.dephasage[4] == 0) {
         		tap = new TransmetteurAnalogiqueParfait();
         	}
         	else {
         		
-        		tap = new TransmetteurAnalogiqueBruite(snrpb, nbEch);
+        		tap = new TransmetteurAnalogiqueBruite(snrpb, nbEch, attenuation, dephasage, seed);
         	}
         	
         	ea.connecter(tap);
@@ -112,7 +119,6 @@ public class Simulateur {
         	tap.connecter(ra);
         	
         	ra.connecter(destination);
-        	
         	if (affichage) {
         		source.connecter(new SondeLogique("Source", 200));
         		ea.connecter(new SondeAnalogique("EmetteurAnalogique"));
@@ -221,7 +227,7 @@ public class Simulateur {
 				maxAmp = Float.valueOf(args[i]);
 				analogique = true;
 				if (maxAmp < minAmp) {
-					throw new InformationNonConformeException("MAX inferieur à MIN");
+					throw new ArgumentsException("MAX inferieur à MIN");
 				}
     		}
     		
@@ -230,6 +236,30 @@ public class Simulateur {
     			snrpb=Float.valueOf(args[i]);
     			analogique = true;
     			this.snrpb = snrpb;
+    		}
+    		
+    		else if (args[i].matches("-ti")) {
+    			i++; // Passe à l'argument suivant après -ti
+    	        int trajet = 0; // Initialise le compteur de trajets
+    	        // Parcourez les couples dt et ar jusqu'à ce que vous atteigniez un nouvel argument débutant par "-"
+    	        while (i < args.length && !args[i].startsWith("-") && trajet < 5) {
+    	        
+    	                // Récupérez dt comme une valeur entière
+    	                int dt = Integer.parseInt(args[i]);
+    	                if (dt<0) throw new ArgumentsException("Le retard ne peut etre négatif");
+    	                i++; // Passe à l'argument suivant
+    	                // Récupérez ar comme une valeur flottante
+    	                
+    	                float ar = Float.parseFloat(args[i]);
+    	                if (ar>1 || ar<0) throw new ArgumentsException("l'atténuation n'est pas comprise entre 0 et 1");
+    	                // Stockez dt et ar dans les tableaux
+    	                dephasage[trajet] = dt;
+    	                attenuation[trajet] = ar;
+    	                trajet++; // Passage au trajet suivant
+    	                i++; // Passe à l'argument suivant
+    	         
+    	        }
+    	        analogique = true; // Activez le mode analogique
     		}
     		
     		
@@ -265,16 +295,19 @@ public class Simulateur {
      * @return  La valeur du Taux dErreur Binaire.
      */   	   
     public float  calculTauxErreurBinaire() {
-    	
     	int nbErreur = 0;
     	Information<Boolean> infoDestination = destination.getInformationRecue();
     	Information<Boolean> infoSource = source.getInformationEmise();
+    	int longueur = infoDestination.nbElements();
+    	if (infoDestination.nbElements()>infoSource.nbElements()) {
+    		longueur=infoSource.nbElements();
+    	}
     	//System.out.println("Src" + infoSource.nbElements());
     	//System.out.println("Dst" + infoDestination.nbElements());
     	if (infoSource.nbElements() == 0) {
     		return 0.0f;
     	}
-    	for (int i =0; i< infoSource.nbElements(); i++) {
+    	for (int i =0; i< longueur; i++) {
     		//System.out.println("Destination" + infoDestination);
     		//System.out.println("Source" + infoSource);
     		if (infoDestination.iemeElement(i) != infoSource.iemeElement(i)) {
