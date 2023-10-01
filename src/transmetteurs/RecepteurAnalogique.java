@@ -21,6 +21,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      * @param minimumAmp   L'amplitude minimale du signal.
      * @param maximumAmp   L'amplitude maximale du signal.
      * @param nbEchantillon Le nombre d'échantillons par bit.
+     * @param form La forme du signal
      */
 	public RecepteurAnalogique(float minimumAmp, float maximumAmp, int nbEchantillon, String form) {
 		super();
@@ -58,7 +59,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 	public void decodage(Information<Float> information) {
 		if (this.form.equals("NRZ")) {
 			
-			for (int compteur = 0 ; compteur<information.nbElements() - nbEchantillon; compteur+=nbEchantillon){
+			for (int compteur = 0 ; compteur<=information.nbElements() - nbEchantillon; compteur+=nbEchantillon){
 				float moyenne=0f;
 				for (int elmt=0 ; elmt < nbEchantillon; elmt++) {
 					moyenne += information.iemeElement(compteur + elmt);
@@ -76,7 +77,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 		else {
 			int tierPeriode = (int) Math.ceil(nbEchantillon / 3);
 			//System.out.println(this.informationRecue.nbElements()+ "reception");
-			for (int compteur = tierPeriode ; compteur<information.nbElements()- nbEchantillon; compteur+=nbEchantillon){
+			for (int compteur = tierPeriode ; compteur<=information.nbElements()- nbEchantillon; compteur+=nbEchantillon){
 				float moyenne=0f;
 				for (int elmt=0 ; elmt < tierPeriode; elmt++) {
 					moyenne += information.iemeElement(compteur + elmt);

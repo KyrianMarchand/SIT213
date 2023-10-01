@@ -1,6 +1,5 @@
 #!/bin/bash
-java simulateur/Simulateur -mess 0101010101 -s
-java simulateur/Simulateur -mess 2 -s
-java simulateur/Simulateur -s
-java simulateur/Simulateur -seed 98 -s -mess 4
-java simulateur/Simulateur -seed 98 -s -mess 4
+./simulateur -mess 10 -s -ti 300 0.5 
+./simulateur -mess 100 -s -ti 5 1 10 0.5
+./simulateur -mess 10 -s -srnpb 10 -form RZ -ti 300 0.5               
+./simulateur -mess 100 -s -snrpb 5 -form NRZT -ti 5 1 10 0.5

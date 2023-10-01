@@ -13,11 +13,11 @@ public class CSVDataReaderWriter {
 
         List<DataPoint> dataPoints = new ArrayList<>();
 
-        for (int i = 0; i <= 60; i++) {
+        for (float i = 0; i <= 1; i+=0.1) {
         	System.out.println(i);
-            String[] str1 = {"-mess", "100000", "-snrpb", "8", "-form", "RZ", "-nbEch", "30", "-ampl", "0", "5", "-ti", String.valueOf(i), "1"};
-            String[] str2 = {"-mess", "100000", "-snrpb", "8", "-form", "NRZ", "-nbEch", "30", "-ampl", "-5", "5", "-ti", String.valueOf(i), "1"};
-            String[] str3 = {"-mess", "100000", "-snrpb", "8", "-form", "NRZT", "-nbEch", "30", "-ampl", "-5", "5", "-ti", String.valueOf(i), "1"};
+            String[] str1 = {"-mess", "100000", "-snrpb", "8", "-form", "RZ", "-nbEch", "30", "-ampl", "0", "5", "-ti", "25", String.valueOf(i)};
+            String[] str2 = {"-mess", "100000", "-snrpb", "8", "-form", "NRZ", "-nbEch", "30", "-ampl", "-5", "5", "-ti", "25", String.valueOf(i)};
+            String[] str3 = {"-mess", "100000", "-snrpb", "8", "-form", "NRZT", "-nbEch", "30", "-ampl", "-5", "5", "-ti", "25", String.valueOf(i)};
             
             System.out.println("RZ");
             Simulateur sim1 = new Simulateur(str1);

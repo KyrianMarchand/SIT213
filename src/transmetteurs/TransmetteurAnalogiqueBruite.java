@@ -28,6 +28,9 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
      *
      * @param snrpb Le rapport signal-sur-bruit par bit (SNRpb).
      * @param nbEch Le nombre d'échantillons par bit.
+     * @param attenuation Les atténuation des différents trajets
+     * @param dephasage Les déphasage des différents trajets
+     * @param seed La seed pour le pseudo aléatoire
      */
     public TransmetteurAnalogiqueBruite(float snrpb, int nbEch, float[] attenuation, int [] dephasage, Integer seed) {
         super();
@@ -103,6 +106,13 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
         }
     }
     
+    /**
+     * Méthode pour créer un trajet avec un déphasage et une atténuation donnés.
+     *
+     * @param dephasage   Le déphasage à appliquer au trajet.
+     * @param attenuation L'atténuation à appliquer au trajet.
+     * @return Un nouvel objet Information<Float> représentant le trajet.
+     */
     public Information<Float> creationTrajet(int dephasage, float attenuation) {
     	Information<Float> trajetNouveau = new Information<Float>();
     	for (int i =0; i<dephasage; i++) {
@@ -118,6 +128,11 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
     	return trajetNouveau;
     }
     
+    /**
+     * Méthode pour mettre en forme le signal propre en combinant différents trajets.
+     *
+     * @return Un objet Information représentant le signal propre.
+     */
     public Information<Float> miseEnFormeSignalPropre(){
     	Information<Float> info = new Information<Float>();
     	Information<Float> trajetDirect = creationTrajet(0,1);
@@ -133,6 +148,11 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
     	
     }
     
+    /**
+     * Méthode pour calculer la longueur maximale du déphasage.
+     *
+     * @return La longueur maximale du déphasage.
+     */
     public int maxDephasage() {
     	int max = 0;
     	for (int elmt : this.dephasage) {
@@ -143,6 +163,11 @@ public class TransmetteurAnalogiqueBruite extends Transmetteur<Float, Float> {
     	return max + this.informationEmise.nbElements();
     }
     
+    /**
+     * Méthode pour calculer la longueur maximale du trajet.
+     *
+     * @return La longueur maximale du trajet.
+     */
     public int maxTrajetLength() {
         int maxLength = this.informationRecue.nbElements();
 
