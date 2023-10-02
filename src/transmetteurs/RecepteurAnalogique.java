@@ -14,6 +14,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 	float seuil;
 	int nbEchantillon;
 	String form;
+	boolean codeur;
 	
     /**
      * Constructeur de la classe RecepteurAnalogique.
@@ -23,13 +24,14 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      * @param nbEchantillon Le nombre d'échantillons par bit.
      * @param form La forme du signal
      */
-	public RecepteurAnalogique(float minimumAmp, float maximumAmp, int nbEchantillon, String form) {
+	public RecepteurAnalogique(float minimumAmp, float maximumAmp, int nbEchantillon, String form, boolean codeur) {
 		super();
 		this.informationEmise = new Information<Boolean>();
 		this.informationRecue = new Information<Float>();
 		this.seuil = (minimumAmp + maximumAmp)/2;
 		this.nbEchantillon = nbEchantillon;
 		this.form = form;
+		this.codeur = codeur;
 	}
 
     /**
@@ -49,6 +51,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 		
 	}
 	
+	
 	/**
      * Méthode de décodage des signaux analogiques en signaux booléens en fonction
      * du seuil.
@@ -56,20 +59,21 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      * @param information Les signaux analogiques à décoder.
      */
 	
-	public void decodage(Information<Float> information) {
+	public Information<Boolean> decodage(Information<Float> information) {
+		Information<Boolean> infoBoolean = new Information<Boolean>();
 		if (this.form.equals("NRZ")) {
 			
-			for (int compteur = 0 ; compteur<=information.nbElements() - nbEchantillon; compteur+=nbEchantillon){
+			for (int compteur = 0 ; compteur<information.nbElements() - nbEchantillon; compteur+=nbEchantillon){
 				float moyenne=0f;
 				for (int elmt=0 ; elmt < nbEchantillon; elmt++) {
 					moyenne += information.iemeElement(compteur + elmt);
 				}
 				moyenne = moyenne/nbEchantillon;
 				if(moyenne >= seuil) {
-		            this.informationEmise.add(true);
+					infoBoolean.add(true);
 		        }
 		        else {
-		            this.informationEmise.add(false);
+		        	infoBoolean.add(false);
 		        }
 			}
 			
@@ -77,22 +81,40 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 		else {
 			int tierPeriode = (int) Math.ceil(nbEchantillon / 3);
 			//System.out.println(this.informationRecue.nbElements()+ "reception");
-			for (int compteur = tierPeriode ; compteur<=information.nbElements()- nbEchantillon; compteur+=nbEchantillon){
+			for (int compteur = tierPeriode ; compteur<information.nbElements()  - nbEchantillon ; compteur+=nbEchantillon){
 				float moyenne=0f;
 				for (int elmt=0 ; elmt < tierPeriode; elmt++) {
 					moyenne += information.iemeElement(compteur + elmt);
 				}
 				moyenne = moyenne/tierPeriode;
 				if(moyenne >= seuil) {
-		            this.informationEmise.add(true);
+					infoBoolean.add(true);
 		        }
 		        else {
-		            this.informationEmise.add(false);
+		        	infoBoolean.add(false);
 		        }
 			}
 		}
-		
-		
+		return infoBoolean;
+	}
+	
+	public Information<Boolean> decodeurCanal(Information<Boolean> info){
+		Information<Boolean> infoDecodee = new Information<Boolean>();
+		for (int symbole = 0; symbole<info.nbElements()-2; symbole+=3) {
+			if((info.iemeElement(symbole) && !info.iemeElement(symbole+1) && info.iemeElement(symbole+2)) 
+					|| (!info.iemeElement(symbole) && !info.iemeElement(symbole+1) && info.iemeElement(symbole+2))
+					|| (info.iemeElement(symbole) && info.iemeElement(symbole+1) && info.iemeElement(symbole+2))
+					|| (info.iemeElement(symbole) && !info.iemeElement(symbole+1) && !info.iemeElement(symbole+2))) {
+				infoDecodee.add(true);
+			}
+			else if((!info.iemeElement(symbole) && info.iemeElement(symbole+1) && !info.iemeElement(symbole+2))
+					|| (info.iemeElement(symbole) && info.iemeElement(symbole+1) && !info.iemeElement(symbole+2))
+					|| (!info.iemeElement(symbole) && !info.iemeElement(symbole+1) && !info.iemeElement(symbole+2))
+					|| (!info.iemeElement(symbole) && info.iemeElement(symbole+1) && info.iemeElement(symbole+2))) {
+				infoDecodee.add(false);
+			}
+		}
+		return infoDecodee;
 	}
 
 	
@@ -103,6 +125,12 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
      */
 	@Override
 	public void emettre() throws InformationNonConformeException {
+		if (!codeur) {
+			this.informationEmise = decodage(this.informationRecue);
+		}
+		else {
+			this.informationEmise = decodeurCanal(decodage(this.informationRecue));
+		}
 		
 		// TODO Auto-generated method stub
 		for (DestinationInterface <Boolean> destinationConnectee : destinationsConnectees) {

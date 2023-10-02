@@ -15,6 +15,7 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float> {
     private float maximumAmp = 0f;
     private int nbEchantillon = 0;
     private String typeSignal = "";
+    private boolean codeur;
 
     /**
      * Constructeur de la classe EmetteurAnalogique.
@@ -27,7 +28,7 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float> {
      *                                          ou si le minimumAmp est différent
      *                                          de 0 pour le signal "RZ".
      */
-    public EmetteurAnalogique(float minimumAmp, float maximumAmp, int nbEchantillon, String typeSignal)
+    public EmetteurAnalogique(float minimumAmp, float maximumAmp, int nbEchantillon, String typeSignal, boolean codeur)
             throws InformationNonConformeException {
         super();
 
@@ -43,6 +44,7 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float> {
         this.typeSignal = typeSignal;
         this.informationRecue = new Information<Boolean>();
         this.informationEmise = new Information<Float>();
+        this.codeur = codeur;
     }
 
     /**
@@ -68,17 +70,21 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float> {
      */
     @Override
     public void emettre() throws InformationNonConformeException {
+    	Information<Boolean> info = this.informationRecue;
+    	if (codeur) {
+    		info = codage(this.informationRecue);
+    	}
         switch (typeSignal) {
         case "NRZ":
-            translationNRZ();
+            translationNRZ(info);
             break;
 
         case "RZ":
-            translationRZ();
+            translationRZ(info);
             break;
 
         case "NRZT":
-            translationNRZT();
+            translationNRZT(info);
             break;
         }
 
@@ -86,14 +92,33 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float> {
             destinationConnectee.recevoir(informationEmise);
         }
     }
+    
+    private Information<Boolean> codage(Information<Boolean> info) throws InformationNonConformeException{
+    	Information<Boolean> infoCodee = new Information<Boolean>();
+    	for (Boolean bitCourant : info) {
+    		if (bitCourant == null)
+                throw new InformationNonConformeException();
+    		if (bitCourant) {
+    			infoCodee.add(true);
+    			infoCodee.add(false);
+    			infoCodee.add(true);
+    		}
+    		else {
+    			infoCodee.add(false);
+    			infoCodee.add(true);
+    			infoCodee.add(false);
+    		}
+    	}
+    	return infoCodee;
+    }
 
     /**
      * Méthode de transformation du signal en NRZ.
      * 
      * @throws InformationNonConformeException Si l'information reçue est incorrecte.
      */
-    private void translationNRZ() throws InformationNonConformeException {
-        for (Boolean bitCourant : informationRecue) {
+    private void translationNRZ(Information<Boolean> info) throws InformationNonConformeException {
+        for (Boolean bitCourant : info) {
             if (bitCourant == null)
                 throw new InformationNonConformeException();
 
@@ -108,13 +133,13 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float> {
      * 
      * @throws InformationNonConformeException Si l'information reçue est incorrecte.
      */
-    private void translationNRZT() throws InformationNonConformeException {
+    private void translationNRZT(Information<Boolean> info) throws InformationNonConformeException {
         int tierPeriode = (int) Math.ceil(nbEchantillon / 3);
         int reste = nbEchantillon % 3;
 
         // Création d'une copie de l'information reçue pour éviter la modification de la liste originale
         Information<Boolean> tempInfo = new Information<Boolean>();
-        tempInfo = this.informationRecue;
+        tempInfo = info;
 
         for (int indiceElementCourant = 0; indiceElementCourant < tempInfo.nbElements(); indiceElementCourant++) {
             Boolean bitCourant = tempInfo.iemeElement(indiceElementCourant);
@@ -163,9 +188,9 @@ public class EmetteurAnalogique extends Transmetteur<Boolean, Float> {
      * 
      * @throws InformationNonConformeException Si l'information reçue est incorrecte.
      */
-    private void translationRZ() throws InformationNonConformeException {
+    private void translationRZ(Information<Boolean> info) throws InformationNonConformeException {
         float tierPeriode = nbEchantillon / 3;
-        for (Boolean bitCourant : informationRecue) {
+        for (Boolean bitCourant : info) {
             if (bitCourant == null)
                 throw new InformationNonConformeException();
 

@@ -70,6 +70,8 @@ public class Simulateur {
     private float[] attenuation = {0f,0f,0f,0f,0f};
     
     private int[] dephasage = {0,0,0,0,0};
+    
+    private boolean codeur = false;
    	
    
     /** Le constructeur de Simulateur construit une chaîne de
@@ -101,7 +103,7 @@ public class Simulateur {
     	}
     	this.destination = new DestinationFinale();
     	if (analogique) {
-    		EmetteurAnalogique ea = new EmetteurAnalogique(this.minAmp, this.maxAmp, this.nbEch, this.form);
+    		EmetteurAnalogique ea = new EmetteurAnalogique(this.minAmp, this.maxAmp, this.nbEch, this.form, this.codeur);
         	source.connecter(ea);
         	Transmetteur tap;
         	if (snrpb == 10000000000000000000000000000000000000f && this.attenuation[0] == 0 && this.dephasage[0] == 0 && this.attenuation[1] == 0 && this.dephasage[1] == 0
@@ -115,7 +117,7 @@ public class Simulateur {
         	}
         	
         	ea.connecter(tap);
-        	RecepteurAnalogique ra = new RecepteurAnalogique(this.minAmp, this.maxAmp, this.nbEch, this.form);
+        	RecepteurAnalogique ra = new RecepteurAnalogique(this.minAmp, this.maxAmp, this.nbEch, this.form, this.codeur);
         	tap.connecter(ra);
         	
         	ra.connecter(destination);
@@ -260,6 +262,10 @@ public class Simulateur {
     	         
     	        }
     	        analogique = true; // Activez le mode analogique
+    		}
+    		
+    		else if (args[i].matches("-codeur")){
+    			this.codeur = true;
     		}
     		
     		
