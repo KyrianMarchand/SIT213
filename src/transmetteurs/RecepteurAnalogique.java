@@ -63,7 +63,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 		Information<Boolean> infoBoolean = new Information<Boolean>();
 		if (this.form.equals("NRZ")) {
 			
-			for (int compteur = 0 ; compteur<information.nbElements() - nbEchantillon; compteur+=nbEchantillon){
+			for (int compteur = 0 ; compteur<information.nbElements() - nbEchantillon/2; compteur+=nbEchantillon){
 				float moyenne=0f;
 				for (int elmt=0 ; elmt < nbEchantillon; elmt++) {
 					moyenne += information.iemeElement(compteur + elmt);
@@ -81,7 +81,7 @@ public class RecepteurAnalogique extends Transmetteur<Float, Boolean> {
 		else {
 			int tierPeriode = (int) Math.ceil(nbEchantillon / 3);
 			//System.out.println(this.informationRecue.nbElements()+ "reception");
-			for (int compteur = tierPeriode ; compteur<information.nbElements()  - nbEchantillon ; compteur+=nbEchantillon){
+			for (int compteur = tierPeriode ; compteur<information.nbElements()  - nbEchantillon/2 ; compteur+=nbEchantillon){
 				float moyenne=0f;
 				for (int elmt=0 ; elmt < tierPeriode; elmt++) {
 					moyenne += information.iemeElement(compteur + elmt);
