@@ -31,13 +31,16 @@ public class SourceAleatoire extends Source<Boolean>{
 	 * @param seed : Semence
 	 */
 	public SourceAleatoire(int nbElmt, int seed) {
-		Information<Boolean> info = new Information<Boolean>();
-		for (int i = 0; i<nbElmt; i++) {
-			Random rd = new Random();
-			rd.setSeed(seed);
-			info.add(rd.nextBoolean());
-		}
-		this.informationGeneree = info;
-		this.informationEmise = this.informationGeneree;
+	    Information<Boolean> info = new Information<Boolean>();
+	    
+	    Random rd = new Random(seed); // Initialisez le générateur de nombres aléatoires avec la graine.
+
+	    for (int i = 0; i < nbElmt; i++) {
+	        boolean randomValue = rd.nextBoolean(); // Générez une valeur booléenne.
+	        info.add(randomValue); // Ajoutez cette valeur à votre structure d'information.
+	    }
+
+	    this.informationGeneree = info;
+	    this.informationEmise = this.informationGeneree;
 	}
 }

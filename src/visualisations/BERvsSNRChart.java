@@ -2,22 +2,22 @@ package visualisations;
 
 
 import javax.swing.*;
-
-import simulateur.Simulateur;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.text.DecimalFormat; // Importez DecimalFormat pour formater les étiquettes en notation scientifique
+import simulateur.Simulateur;
 
 public class BERvsSNRChart {
 
-    private static double[] snrValues = new double[25];
-    private static double[] berValues1 = new double[25];
-    private static double[] berValues2 = new double[25];
-    private static double[] berValues3 = new double[25];
+    private static double[] snrValues = new double[51];
+    private static double[] berValues1 = new double[51];
+    private static double[] berValues2 = new double[51];
+    private static double[] berValues3 = new double[51];
     private static String[] signalTypes = {"RZ", "NRZ", "NRZT"};
-    private static String[] xLabels = {"0", "5", "10", "15", "20"};
-    private static String[] yLabels = {"0.0", "0.1", "0.2", "0.3", "0.4", "0.5"};
+    private static String[] xLabels = {"-25", "-20", "-15", "-10", "-5", "0", "5", "10", "15", "20", "25"};
+    private static double[] yValues = {-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5}; // Puissances de 10 pour l'axe des ordonnées
+    private static String[] yLabels = new String[yValues.length]; // Étiquettes pour l'axe des ordonnées
 
     public static void main(String[] args) throws Exception {
         values();
@@ -34,10 +34,10 @@ public class BERvsSNRChart {
         double maxSnr = 0;
         double maxBer = 0;
 
-        for (int i = 0; i < 25; i++) {
-            String[] str1 = {"-mess", "10000", "-snrpb", String.valueOf(i), "-form", "RZ", "-nbEch", "100", "-ampl", "0", "5"};
-            String[] str2 = {"-mess", "10000", "-snrpb", String.valueOf(i), "-form", "NRZ", "-nbEch", "100", "-ampl", "0", "5"};
-            String[] str3 = {"-mess", "10000", "-snrpb", String.valueOf(i), "-form", "NRZT", "-nbEch", "100", "-ampl", "0", "5"};
+        for (int i = -25; i <= 25; i++) { // Couvrir la plage de -25 à 25 inclus
+            String[] str1 = {"-mess", "100000", "-snrpb", String.valueOf(i), "-form", "RZ", "-nbEch", "30", "-ampl", "0", "5"};
+            String[] str2 = {"-mess", "100000", "-snrpb", String.valueOf(i), "-form", "NRZ", "-nbEch", "30", "-ampl", "0", "5"};
+            String[] str3 = {"-mess", "100000", "-snrpb", String.valueOf(i), "-form", "NRZT", "-nbEch", "30", "-ampl", "0", "5"};
 
             Simulateur sim1 = new Simulateur(str1);
             Simulateur sim2 = new Simulateur(str2);
@@ -47,27 +47,33 @@ public class BERvsSNRChart {
             sim2.execute();
             sim3.execute();
 
-            snrValues[i] = i;
-            berValues1[i] = sim1.calculTauxErreurBinaire();
-            berValues2[i] = sim2.calculTauxErreurBinaire();
-            berValues3[i] = sim3.calculTauxErreurBinaire();
+            snrValues[i + 25] = i; // Stockez la valeur SNR au lieu de l'indice i
+            berValues1[i + 25] = sim1.calculTauxErreurBinaire();
+            berValues2[i + 25] = sim2.calculTauxErreurBinaire();
+            berValues3[i + 25] = sim3.calculTauxErreurBinaire();
 
-            maxSnr = Math.max(maxSnr, snrValues[i]);
-            maxBer = Math.max(maxBer, berValues1[i]);
-            maxBer = Math.max(maxBer, berValues2[i]);
-            maxBer = Math.max(maxBer, berValues3[i]);
+            maxSnr = Math.max(maxSnr, snrValues[i + 25]);
+            maxBer = Math.max(maxBer, berValues1[i + 25]);
+            maxBer = Math.max(maxBer, berValues2[i + 25]);
+            maxBer = Math.max(maxBer, berValues3[i + 25]);
         }
 
         // Normalisation des valeurs de SNR
-        for (int i = 0; i < 25; i++) {
-            snrValues[i] /= maxSnr;
+        for (int i = 0; i < 51; i++) {
+            snrValues[i] = (snrValues[i] + 25) / 50.0;
         }
 
         // Normalisation des valeurs de BER
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 51; i++) {
             berValues1[i] /= maxBer;
             berValues2[i] /= maxBer;
             berValues3[i] /= maxBer;
+        }
+
+        // Créez des étiquettes pour l'axe des ordonnées en format de notation scientifique
+        DecimalFormat formatter = new DecimalFormat("0.0E0");
+        for (int i = 0; i < yValues.length; i++) {
+            yLabels[i] = formatter.format(Math.pow(10, yValues[i]));
         }
     }
 
@@ -151,3 +157,4 @@ public class BERvsSNRChart {
         }
     }
 }
+
